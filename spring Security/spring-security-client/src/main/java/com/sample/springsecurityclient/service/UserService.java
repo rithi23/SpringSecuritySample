@@ -8,4 +8,6 @@ public interface UserService {
     UserEntity registerUser(UserModel userModel);
 
     void saveVerificationTokenForUser(String token, UserEntity user);
+
+    String validateVerificationToken(String token);
 }

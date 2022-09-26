@@ -25,6 +25,5 @@ public class WebSecurityConfig {
         http.cors().and().csrf().disable();
         http.authorizeHttpRequests().antMatchers(WHITE_LIST_URLS).permitAll();
         return http.build();
-
     }
 }

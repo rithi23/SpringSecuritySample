@@ -7,10 +7,7 @@ import com.sample.springsecurityclient.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -40,12 +37,20 @@ public class RegistrationController {
         return "successfully completed";
     }
 
+    @GetMapping("/verifyRegistration")
+    public String verifyRegistration(@RequestParam("token") String token) {
+        String result = userService.validateVerificationToken(token);
+        if(result.equalsIgnoreCase("valid")) {
+            return "user verified successfully";
+        }
+        return "bad user";
+    }
+
     private String applicationUrl(HttpServletRequest request) {
         return "http://" +
                 request.getServerName() +
                 ":" +
                 request.getServerPort() +
                 request.getContextPath();
-
     }
 }
