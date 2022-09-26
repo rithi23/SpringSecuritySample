@@ -1,8 +1,10 @@
 package com.sample.springsecurityclient.service;
 
+import com.sample.springsecurityclient.entity.PasswordResetToken;
 import com.sample.springsecurityclient.entity.UserEntity;
 import com.sample.springsecurityclient.entity.VerificationToken;
 import com.sample.springsecurityclient.model.UserModel;
+import com.sample.springsecurityclient.repository.PasswordResetTokenRepository;
 import com.sample.springsecurityclient.repository.UserRepository;
 import com.sample.springsecurityclient.repository.VerificationTokenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +28,8 @@ class UserServiceImpl implements UserService {
     @Autowired
     private VerificationTokenRepository verificationTokenRepository;
 
+    @Autowired
+    PasswordResetTokenRepository passwordResetTokenRepository;
 
     @Override
     public UserEntity registerUser(UserModel userModel) {
@@ -77,6 +81,38 @@ class UserServiceImpl implements UserService {
 
     @Override
     public void createPasswordResetForToken(UserEntity user, String token) {
-        
+        PasswordResetToken passwordResetToken = new PasswordResetToken(user,token);
+        passwordResetTokenRepository.save(passwordResetToken);
+    }
+
+    @Override
+    public String validatePasswordResetToken(String token) {
+        PasswordResetToken passwordResetToken = passwordResetTokenRepository.findByToken(token);
+        if(passwordResetToken == null) {
+            return null;
+        }
+        UserEntity user = passwordResetToken.getUser();
+        Calendar calendar = Calendar.getInstance();
+        if((passwordResetToken.getExpirationTime().getTime() - calendar.getTime().getTime()) <= 0) {
+            passwordResetTokenRepository.delete(passwordResetToken);
+            return "expired";
+        }
+        return "valid";
+    }
+
+    @Override
+    public UserEntity getUserByPasswordResetToken(String token) {
+        return passwordResetTokenRepository.findByToken(token).getUser();
+    }
+
+    @Override
+    public void changePassword(UserEntity user, String newPassword) {
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
+
+    @Override
+    public boolean checkIfValidOldPassword(UserEntity user, String oldPassword) {
+        return passwordEncoder.matches(oldPassword, user.getPassword());
     }
 }

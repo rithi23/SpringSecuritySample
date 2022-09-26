@@ -17,4 +17,12 @@ public interface UserService {
     UserEntity findUserByEmail(String email);
 
     void createPasswordResetForToken(UserEntity user, String token);
+
+    String validatePasswordResetToken(String token);
+
+    UserEntity getUserByPasswordResetToken(String token);
+
+    void changePassword(UserEntity user, String newPassword);
+
+    boolean checkIfValidOldPassword(UserEntity user, String oldPassword);
 }
