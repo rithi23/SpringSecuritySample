@@ -1,16 +1,21 @@
 package com.sample.springsecurityclient.controller;
 
 import com.sample.springsecurityclient.entity.UserEntity;
+import com.sample.springsecurityclient.entity.VerificationToken;
 import com.sample.springsecurityclient.event.RegistrationCompleteEvent;
+import com.sample.springsecurityclient.model.PasswordModel;
 import com.sample.springsecurityclient.model.UserModel;
 import com.sample.springsecurityclient.service.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.UUID;
 
+@Slf4j
 @RestController
 public class RegistrationController {
 
@@ -46,6 +51,30 @@ public class RegistrationController {
         return "bad user";
     }
 
+    @GetMapping("/resendVerifyToken")
+    public String resendVerificationToken(@RequestParam("token") String oldToken, HttpServletRequest request) {
+        VerificationToken verificationToken = userService.generateNewVerificationToken(oldToken);
+        UserEntity user = verificationToken.getUser();
+        resendVerificationTokenMail(user,applicationUrl(request), verificationToken);
+        return "verification link sent";
+        
+    }
+
+    private void resendVerificationTokenMail(UserEntity user, String applicationUrl, VerificationToken verificationToken) {
+
+        String url = applicationUrl + "/verifyRegistration?token=" + verificationToken.getToken() ;
+
+        log.info("Click the link to verify your account :" + url);
+    }
+
+    public String resetPassword(@RequestBody PasswordModel passwordModel) {
+        UserEntity user = userService.findUserByEmail(passwordModel.getEmail());
+        if(user != null) {
+            String token = UUID.randomUUID().toString();
+            userService.createPasswordResetForToken(user,token);
+        }
+    }
+
     private String applicationUrl(HttpServletRequest request) {
         return "http://" +
                 request.getServerName() +
@@ -53,4 +82,6 @@ public class RegistrationController {
                 request.getServerPort() +
                 request.getContextPath();
     }
+
+
 }

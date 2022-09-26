@@ -12,7 +12,9 @@ public class WebSecurityConfig {
 
     public static  final String[] WHITE_LIST_URLS = {
             "/hello",
-            "/register"
+            "/register",
+            "/verifyRegistration",
+            "/resendVerifyToken*"
     };
 
     @Bean
